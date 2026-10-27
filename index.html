@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Catalog</title>
+  <!--Bootstrap CSS-->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+  <!--Bootstrap JS-->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" defer integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+ <!--Bootstrap CSS-->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+  <!--Bootstrap JS-->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" defer integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+</head>
+
+<body class="bg-light">
+    <!-- Main catalog content -->
+    <div class="container py-5">
+        <h1 class="mb-4 fw-bold">Product Catalog</h1>
+        <!-- Product search and filtering controls -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <div class="row g-3">
+                    <!-- Search products by name -->
+                    <div class="col-md-4">
+                        <input type="text" id="searchInput" class="form-control" placeholder="Search products...">
+                    </div>
+                    <!-- Filter products by category -->
+                    <div class="col-md-4">
+                        <select id="categoryFilter" class="form-select">
+                            <option value="All">All Categories</option>
+                        </select>
+                    </div>
+                    <!-- Sort products by price -->
+                    <div class="col-md-4">
+                        <select id="sortPrice" class="form-select">
+                            <option value="asc">Price: Low to High</option>
+                            <option value="desc">Price: High to Low</option>
+                        </select>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <!-- Products are rendered here by JavaScript -->
+        <div class="row" id="productGrid"></div>
+    </div>
+
+<!-- Get dataset: an array "products" of 10 products -->
+<script src="dataset.js"></script>
+
+<!--Implement the product catalogs--> 
+<script>
+    // Get references to the page elements used by the catalog.
+    const productGrid = document.getElementById("productGrid");
+    const searchInput = document.getElementById("searchInput");
+    const categoryFilter = document.getElementById("categoryFilter");
+    const sortPrice = document.getElementById("sortPrice");
+
+    // Populate categories
+    const categories = [...new Set(products.map(p => p.category))];
+    
+    // Add each unique product category to the filter menu.
+    categories.forEach(category => {
+        const option = document.createElement("option");
+        option.value = category;
+        option.textContent = category;
+        categoryFilter.appendChild(option);
+    });
+
+    // Filter, sort, and render the products whenever the catalog changes.
+    const renderProducts = () => {
+        // Read the current values from the search, category, and sort controls.
+        const searchTerm = searchInput.value.toLowerCase();
+        const selectedCategory = categoryFilter.value;
+        const selectedSort = sortPrice.value;
+        // Keep products matching both the search term and selected category.
+        let filteredProducts = products.filter(product => {
+            const matchesSearch = product.name.toLowerCase().includes(searchTerm);
+            const matchesCategory = selectedCategory === "All" || product.category === selectedCategory;
+            return matchesSearch && matchesCategory;
+        });
+
+        // Sort the filtered products by price in the selected direction.
+        filteredProducts.sort((a, b) => {
+            return selectedSort === "asc"
+                ? a.price - b.price
+                : b.price - a.price;
+        });
+
+        // Clear the previous results before rendering the updated list.
+        productGrid.innerHTML = "";
+        if (filteredProducts.length === 0) {
+            // Show a message when no products match the current controls.
+            productGrid.innerHTML = `
+                <div class="col-12">
+                    <div class="alert alert-warning">
+                        No products found.
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
+        // Create one Bootstrap card for each matching product.
+        filteredProducts.forEach(product => {
+            productGrid.innerHTML += `
+                <div class="col-sm-6 col-lg-3 mb-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="ratio ratio-4x3 d-flex align-items-center 
+                            justify-content-center bg-body-secondary text-secondary 
+                            rounded mb-3 fw-medium"> 
+                                <img id="productImage" class="image-fluid" src="${product.image}" alt="Product Image">
+                            </div>
+                            <h5 class="card-title">${product.name}</h5>
+                            <p class="text-muted mb-2"> ${product.category}</p>
+                            <div class="fs-4 fw-bold text-primary">$${product.price}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    // Re-render the catalog when any control value changes.
+    searchInput.addEventListener("input", renderProducts);
+    categoryFilter.addEventListener("change", renderProducts);
+    sortPrice.addEventListener("change", renderProducts);
+
+    // Render the initial catalog when the page loads.
+    renderProducts();
+</script>
+
+</body>
+</html>
